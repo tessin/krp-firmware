@@ -22,16 +22,34 @@ GPIO.cleanup()
 # lcd.clear()
 # lcd.message("HelloWorld!")
 
-status_led = 38 
+led_pin = 38
+GPIO.setup(led_pin, GPIO.OUT)
 
-GPIO.setup(status_led, GPIO.OUT)
+left_button_pin = 33
+GPIO.setup(left_button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+ok_button_pin = 35
+GPIO.setup(ok_button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+right_button_pin = 37
+GPIO.setup(right_button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+# while True:
+#     GPIO.output(led_pin, GPIO.HIGH)
+#     print("hello")
+#     time.sleep(2)
+#     GPIO.output(led_pin, GPIO.LOW)
+#     time.sleep(2)
 
 while True:
-    GPIO.output(status_led, GPIO.HIGH)
-    print("hello")
-    time.sleep(2)
-    GPIO.output(status_led, GPIO.LOW)
-    time.sleep(2)
+    input_state = GPIO.input(ok_button_pin)
+    if input_state == False:
+        print('OK Button Pressed')
+        time.sleep(0.2)
+
+
+
+
 
 
 
