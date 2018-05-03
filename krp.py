@@ -3,7 +3,7 @@ import RPi.GPIO as GPIO
 import time
 
 GPIO.cleanup()
-GPIO.setmode(GPIO.BOARD)
+GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(True)
 
 # lcd_rs = 25
@@ -22,16 +22,16 @@ GPIO.setwarnings(True)
 # lcd.clear()
 # lcd.message("HelloWorld!")
 
-led_pin = 38
+led_pin = 20
 GPIO.setup(led_pin, GPIO.OUT)
 
-left_button_pin = 33
+left_button_pin = 13
 GPIO.setup(left_button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-ok_button_pin = 35
+ok_button_pin = 19
 GPIO.setup(ok_button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-right_button_pin = 37
+right_button_pin = 26
 GPIO.setup(right_button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 # while True:
