@@ -2,8 +2,9 @@ import Adafruit_CharLCD as LCD
 import RPi.GPIO as GPIO
 import time
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BOARD)
+GPIO.setwarnings(True)
+GPIO.cleanup()
 
 # lcd_rs = 25
 # lcd_en = 24
@@ -21,12 +22,16 @@ GPIO.setwarnings(False)
 # lcd.clear()
 # lcd.message("HelloWorld!")
 
-status_led = 21
+status_led = 38 
 
 GPIO.setup(status_led, GPIO.OUT)
 
 while True:
     GPIO.output(status_led, GPIO.HIGH)
+    print("hello")
     time.sleep(2)
     GPIO.output(status_led, GPIO.LOW)
     time.sleep(2)
+
+
+
