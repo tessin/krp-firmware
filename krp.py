@@ -2,9 +2,9 @@ import Adafruit_CharLCD as LCD
 import RPi.GPIO as GPIO
 import time
 
+GPIO.cleanup()
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(True)
-GPIO.cleanup()
 
 # lcd_rs = 25
 # lcd_en = 24
