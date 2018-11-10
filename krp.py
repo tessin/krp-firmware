@@ -1,6 +1,7 @@
 import Adafruit_CharLCD as LCD
 import RPi.GPIO as GPIO
 from time import sleep
+import commands
 
 GPIO.cleanup()
 GPIO.setmode(GPIO.BCM)
@@ -20,7 +21,11 @@ lcd = LCD.Adafruit_CharLCD(lcd_rs, lcd_en, lcd_d4, lcd_d5, lcd_d6, lcd_d7, lcd_c
 
 lcd.home()
 lcd.clear()
-lcd.message("HelloWorld!")
+
+lcd.message(commands.getoutput('hostname -I'))
+sleep(5)
+
+lcd.message("HelloWorld!\nFoo")
 
 led_pin = 20
 GPIO.setup(led_pin, GPIO.OUT)
