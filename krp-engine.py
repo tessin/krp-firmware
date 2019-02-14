@@ -114,3 +114,4 @@ class KrpConsoleClient(KrpClient):
 
 controller = KrpController(KrpConsoleClient())
 controller.init()
+#controller.start()
