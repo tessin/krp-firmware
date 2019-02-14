@@ -25,6 +25,9 @@ lcd.clear()
 lcd.message(commands.getoutput('hostname -I'))
 sleep(5)
 
+lcd.home()
+lcd.clear()
+
 lcd.message("HelloWorld!\nFoo")
 
 led_pin = 20

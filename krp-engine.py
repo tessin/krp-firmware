@@ -3,12 +3,16 @@ import socket
 
 #################################################################
 
+# Last cleaned by:
+# Niels
+
 class KrpController:
 
     baseUrl = "https://azfn-linqpad-web-app-e5opllzphjvwc.azurewebsites.net/api/krp"
     minimumMinutesBetweenLogs = 0
     users = []
-    currentUser = 0;
+    latestLogByUserId = None #todo: get this from the server
+    currentUser = 0
 
     def __init__(self, client):
         self.client = client
@@ -23,7 +27,11 @@ class KrpController:
         self.minimumMinutesBetweenLogs = data['MinimumMinutesBetweenLogs']
         for jUser in data['Users']:
             self.users.append(KrpPlayer(jUser['Id'], jUser['FirstName'], jUser['LastName']))
+
+        print(self.users)
+
         self.client.clear()
+        self.__writeLastCleanedBy()
         self.client.loop()
 
     def onLeft(self):
@@ -34,6 +42,18 @@ class KrpController:
 
     def onOk(self):
         self.client.write("ok", "")
+
+    def __writeLastCleanedBy(self):
+        user = self.__findUserById(self.latestLogByUserId)
+        self.client.write("Last cleaned by:", user.firstName if user is not None else "<NONE>")
+
+    def __findUserById(self, userId):
+        if userId is None:
+            return None
+        for user in self.users:
+            if user.id == userId:
+                return user
+        return None
 
 #################################################################
 
