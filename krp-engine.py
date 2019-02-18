@@ -1,5 +1,6 @@
 import requests
-import socket
+from socket import *
+from threading import Thread, Timer
 
 #################################################################
 
@@ -12,13 +13,16 @@ class KrpController:
     minimumMinutesBetweenLogs = 0
     users = []
     latestLogByUserId = None #todo: get this from the server
-    currentUser = 0
+    selectedUserIndex = 0
+
+    returnTimer = None
 
     def __init__(self, client):
         self.client = client
-        self.client.controller = self;
+        self.client.controller = self
 
     def init(self):
+        self.state = "LOADING"
         self.client.init()
         self.client.write(self.client.getIp(),"Loading...")
         url = f"{self.baseUrl}/config"
@@ -28,41 +32,92 @@ class KrpController:
         for jUser in data['Users']:
             self.users.append(KrpPlayer(jUser['Id'], jUser['FirstName'], jUser['LastName']))
 
-        print(self.users)
-
         self.client.clear()
         self.__writeLastCleanedBy()
-        self.client.loop()
+        # self.client.loop()
 
-    def onLeft(self):
-        self.client.write("left","")
+    def onButtonPress(self, button):            # handler for button press
+        if self.state == "MENU":
+            self.__selectPlayer()
+        elif self.state == "SELECT_PLAYER":
+            if button == "LEFT":
+                self.selectedUserIndex -= 1
+                if self.selectedUserIndex == -1: self.selectedUserIndex = len(self.users) - 1
+                self.__selectPlayer()
+            elif button == "RIGHT":
+                self.selectedUserIndex += 1
+                if self.selectedUserIndex == len(self.users): self.selectedUserIndex = 0
+                self.__selectPlayer()
+            elif button == "OK":
+                self.__registerPlayer(self.users[self.selectedUserIndex].id)
+        elif self.state == "ERROR":
+            self.__writeLastCleanedBy()
 
-    def onRight(self):
-        self.client.write("right", "")
-
-    def onOk(self):
-        self.client.write("ok", "")
-
-    def __writeLastCleanedBy(self):
+    def __writeLastCleanedBy(self):             # Show main menu
+        self.state = "MENU"
         user = self.__findUserById(self.latestLogByUserId)
         self.client.write("Last cleaned by:", user.firstName if user is not None else "<NONE>")
 
-    def __findUserById(self, userId):
+        self.__cancelReturningTimer()
+
+    def __selectPlayer(self):                   # Show select player on led
+        self.state = "SELECT_PLAYER"
+        user = self.users[self.selectedUserIndex]
+
+        self.__startReturningTimer()
+        
+        userString = str(user).ljust(14)
+        self.client.write("SELECT", "<" + userString + ">")
+
+    def __registerPlayer(self, userId):         # Show registing player on led
+        self.state = "REGISTERING"
+        self.client.write("Registering...", "")
+
+        self.__cancelReturningTimer()
+
+        try:
+            url = f"{self.baseUrl}/log?playerId={userId}"
+            requests.get(url=url)
+            self.latestLogByUserId = userId
+            self.__writeLastCleanedBy()
+        except:
+            self.__writeError("")
+            pass
+    
+    def __writeError(self, error):              # Show Error on Led when register failed
+        self.state = "ERROR"
+        self.client.write("Oops!", error)
+        self.__startReturningTimer()
+
+    def __findUserById(self, userId):           # Find user by userId
         if userId is None:
             return None
         for user in self.users:
             if user.id == userId:
                 return user
         return None
+    
+    def __startReturningTimer(self):            # Timer for returning to main menu when no signal in 5 seconds.
+        self.__cancelReturningTimer()
+        self.returnTimer = Timer(5, self.__writeLastCleanedBy)
+        self.returnTimer.start()
+    
+    def __cancelReturningTimer(self):           # Cancel returing timer
+        if self.returnTimer != None and self.returnTimer.is_alive():
+            self.returnTimer.cancel()
+
 
 #################################################################
 
 class KrpPlayer:
 
     def __init__(self, id, firstName, lastName):
-        self.id = id,
-        firstName = firstName,
-        lastName = lastName
+        self.id = id
+        self.firstName = firstName
+        self.lastName = lastName
+    
+    def __str__(self):
+        return self.firstName
 
 #################################################################
 
@@ -82,7 +137,7 @@ class KrpClient:
         pass
 
     def getIp(self):
-        return socket.gethostbyname(socket.gethostname())
+        return gethostbyname(gethostname())
 
 class KrpConsoleClient(KrpClient):
 
@@ -98,20 +153,44 @@ class KrpConsoleClient(KrpClient):
         print("|"+bottom16+"|")
         print("+----------------+")
 
-    def loop(self):
-        while True:
-            key = input("")
-            if key == "r":
-                controller.onRight()
-            if key == "l":
-                controller.onLeft()
-            if key == "o":
-                controller.onOk()
-            if key == "q":
-                break
+    # def loop(self):
+    #     while True:
+    #         key = input("")
+    #         if key == "r":
+    #             controller.onRight()
+    #         if key == "l":
+    #             controller.onLeft()
+    #         if key == "o":
+    #             controller.onOk()
+    #         if key == "q":
+    #             break
 
 #################################################################
 
 controller = KrpController(KrpConsoleClient())
 controller.init()
-#controller.start()
+
+OUR_ADDRESS     = ('127.0.0.1', 3002) # listen to
+ADDRESS_TO_SEND = ('127.0.0.1', 3003) # send to
+sock = socket(AF_INET, SOCK_DGRAM)
+sock.setsockopt( SOL_SOCKET,SO_REUSEADDR, 1 )
+sock.bind( OUR_ADDRESS )
+sock.setsockopt( SOL_SOCKET,SO_BROADCAST, 1 )
+
+def buttonHandler(*args):
+    while True:
+        try:
+            data, addr = sock.recvfrom(256)
+            button = data.decode("utf-8")
+            print(button)
+            controller.onButtonPress(button)
+            # if button == "LEFT":
+            #     controller.onLeft()
+            # elif button == "RIGHT":
+            #     controller.onRight()
+            # else:
+            #     controller.onOk()
+        except:
+            pass
+
+Thread(target=buttonHandler).start()
