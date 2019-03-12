@@ -28,6 +28,7 @@ class KrpController:
         url = f"{self.baseUrl}/config"
         response = requests.get(url=url)
         data = response.json()
+        print(str(data))
         self.minimumMinutesBetweenLogs = data['MinimumMinutesBetweenLogs']
         for jUser in data['Users']:
             self.users.append(KrpPlayer(jUser['Id'], jUser['FirstName'], jUser['LastName']))
@@ -139,58 +140,41 @@ class KrpClient:
     def getIp(self):
         return gethostbyname(gethostname())
 
+OUR_ADDRESS     = ('127.0.0.1', 3002) # listen to
+ADDRESS_TO_SEND = ('127.0.0.1', 3003) # send to
+
 class KrpConsoleClient(KrpClient):
+    sock = None
 
     def init(self):
-        pass
+        self.sock = socket(AF_INET, SOCK_DGRAM)
+        self.sock.setsockopt( SOL_SOCKET,SO_REUSEADDR, 1 )
+        self.sock.bind( OUR_ADDRESS )
+        self.sock.setsockopt( SOL_SOCKET,SO_BROADCAST, 1 )
+
+        def buttonHandler(*args):
+            while True:
+                try:
+                    data, addr = sock.recvfrom(256)
+                    button = data.decode("utf-8")
+                    print(button)
+                    controller.onButtonPress(button)
+                except:
+                    pass
+
+        Thread(target=buttonHandler).start()
 
     def write(self, top16, bottom16):
         top16 = '{0: <16}'.format(top16[:16])
         bottom16 = '{0: <16}'.format(bottom16[:16])
+        self.sock.sendto((top16 + bottom16).encode(), ADDRESS_TO_SEND)
         print("+----------------+")
         print("|"+top16+"|")
         print("+----------------+")
         print("|"+bottom16+"|")
         print("+----------------+")
 
-    # def loop(self):
-    #     while True:
-    #         key = input("")
-    #         if key == "r":
-    #             controller.onRight()
-    #         if key == "l":
-    #             controller.onLeft()
-    #         if key == "o":
-    #             controller.onOk()
-    #         if key == "q":
-    #             break
-
 #################################################################
 
 controller = KrpController(KrpConsoleClient())
 controller.init()
-
-OUR_ADDRESS     = ('127.0.0.1', 3002) # listen to
-ADDRESS_TO_SEND = ('127.0.0.1', 3003) # send to
-sock = socket(AF_INET, SOCK_DGRAM)
-sock.setsockopt( SOL_SOCKET,SO_REUSEADDR, 1 )
-sock.bind( OUR_ADDRESS )
-sock.setsockopt( SOL_SOCKET,SO_BROADCAST, 1 )
-
-def buttonHandler(*args):
-    while True:
-        try:
-            data, addr = sock.recvfrom(256)
-            button = data.decode("utf-8")
-            print(button)
-            controller.onButtonPress(button)
-            # if button == "LEFT":
-            #     controller.onLeft()
-            # elif button == "RIGHT":
-            #     controller.onRight()
-            # else:
-            #     controller.onOk()
-        except:
-            pass
-
-Thread(target=buttonHandler).start()
