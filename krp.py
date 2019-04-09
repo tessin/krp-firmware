@@ -2,7 +2,9 @@ import Adafruit_CharLCD as LCD
 import RPi.GPIO as GPIO
 from time import sleep
 import commands
-from threading import Thread
+from threading import Thread, Timer
+import requests
+from socket import *
 
 GPIO.cleanup()
 GPIO.setmode(GPIO.BCM)
@@ -79,7 +81,7 @@ class KrpController:
         url = self.baseUrl + "/config"
         response = requests.get(url=url)
         data = response.json()
-        print(str(data))
+        # print(str(data))
         self.minimumMinutesBetweenLogs = data['MinimumMinutesBetweenLogs']
         for jUser in data['Users']:
             self.users.append(KrpPlayer(jUser['Id'], jUser['FirstName'], jUser['LastName']))
@@ -194,13 +196,13 @@ class KrpClient:
 class KrpConsoleClient(KrpClient):
     lcd = None
 
-    def init(self, lcd):
+    def __init__(self, lcd):
         self.lcd = lcd
 
     def write(self, top16, bottom16):
         top16 = '{0: <16}'.format(top16[:16])
         bottom16 = '{0: <16}'.format(bottom16[:16])
-        self.lcd.message(data)
+        self.lcd.message(top16 + bottom16)
         print("+----------------+")
         print("|"+top16+"|")
         print("+----------------+")
