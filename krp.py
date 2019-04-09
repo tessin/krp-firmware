@@ -5,6 +5,7 @@ import commands
 from threading import Thread, Timer
 import requests
 from socket import *
+import sys, termios, tty, os
 
 GPIO.cleanup()
 GPIO.setmode(GPIO.BCM)
@@ -202,7 +203,8 @@ class KrpConsoleClient(KrpClient):
     def write(self, top16, bottom16):
         top16 = '{0: <16}'.format(top16[:16])
         bottom16 = '{0: <16}'.format(bottom16[:16])
-        self.lcd.message(top16 + bottom16)
+        self.lcd.clear()
+        self.lcd.message(top16 + "\n" + bottom16)
         print("+----------------+")
         print("|"+top16+"|")
         print("+----------------+")
@@ -222,9 +224,23 @@ GPIO.add_event_detect(left_button_pin, GPIO.FALLING, callback=lambda x: buttonPr
 GPIO.add_event_detect(ok_button_pin, GPIO.FALLING, callback=lambda x: buttonPressed("OK"), bouncetime=200)
 GPIO.add_event_detect(right_button_pin, GPIO.FALLING, callback=lambda x: buttonPressed("RIGHT"), bouncetime=200)
 
+def getch():
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(sys.stdin.fileno())
+        ch = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return ch
+
 def run(*args):
     while True:
-        pass
+		char = getch()
+
+		if (char == "p"):
+			print("Stop!")
+			exit(0)
 
 Thread(target=run).start()
 
