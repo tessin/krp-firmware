@@ -132,6 +132,7 @@ class KrpController:
 
         try:
             url = self.baseUrl + "/log?playerId=" + userId
+            print(url)
             requests.get(url=url)
             self.latestLogByUserId = userId
             self.__writeLastCleanedBy()
