@@ -218,9 +218,9 @@ def buttonPressed(button):
     controller.onButtonPress(button)
     print(button)
 
-GPIO.add_event_detect(left_button_pin, GPIO.FALLING, callback=lambda x: buttonPressed("LEFT"), bouncetime=2000)
-GPIO.add_event_detect(ok_button_pin, GPIO.FALLING, callback=lambda x: buttonPressed("OK"), bouncetime=2000)
-GPIO.add_event_detect(right_button_pin, GPIO.FALLING, callback=lambda x: buttonPressed("RIGHT"), bouncetime=2000)
+GPIO.add_event_detect(left_button_pin, GPIO.FALLING, callback=lambda x: buttonPressed("LEFT"), bouncetime=200)
+GPIO.add_event_detect(ok_button_pin, GPIO.FALLING, callback=lambda x: buttonPressed("OK"), bouncetime=200)
+GPIO.add_event_detect(right_button_pin, GPIO.FALLING, callback=lambda x: buttonPressed("RIGHT"), bouncetime=200)
 
 def run(*args):
     while True:
