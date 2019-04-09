@@ -1,0 +1,4 @@
+#!/bin/bash
+sleep 5s
+cd /home/pi/Repos/krp-firmware/
+python krp.py
