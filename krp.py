@@ -53,7 +53,7 @@ GPIO.setup(right_button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 #     GPIO.output(led_pin, GPIO.LOW)
 #     time.sleep(2)
 
-GPIO.output(led_pin, GPIO.HIGH)
+# GPIO.output(led_pin, GPIO.HIGH)
 
 #while True:
 #    input_state = GPIO.input(ok_button_pin)
@@ -78,6 +78,7 @@ class KrpController:
     def init(self):
         self.state = "LOADING"
         self.client.init()
+        self.client.turnLed(True)
         self.client.write(self.client.getIp(),"Loading...")
         url = self.baseUrl + "/config"
         response = requests.get(url=url)
@@ -126,19 +127,21 @@ class KrpController:
 
     def __registerPlayer(self, userId):         # Show registing player on led
         self.state = "REGISTERING"
+        self.client.turnLed(True)
         self.client.write("Registering...", "")
 
         self.__cancelReturningTimer()
 
         try:
-            url = self.baseUrl + "/log?playerId=" + userId
-            print(url)
+            url = self.baseUrl + "/log?playerId=" + str(userId)
             requests.get(url=url)
             self.latestLogByUserId = userId
             self.__writeLastCleanedBy()
         except:
             self.__writeError("")
             pass
+        
+        self.client.turnLed(False)
     
     def __writeError(self, error):              # Show Error on Led when register failed
         self.state = "ERROR"
@@ -211,6 +214,16 @@ class KrpConsoleClient(KrpClient):
         print("+----------------+")
         print("|"+bottom16+"|")
         print("+----------------+")
+    
+    def turnLed(self, on):
+        if on:
+            GPIO.output(led_pin, GPIO.HIGH)
+        else:
+            GPIO.output(led_pin, GPIO.LOW)
+    
+    def clear(self):
+        self.lcd.clear()
+        GPIO.output(led_pin, GPIO.LOW)
 
 #################################################################
 
