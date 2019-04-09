@@ -25,7 +25,7 @@ class KrpController:
         self.state = "LOADING"
         self.client.init()
         self.client.write(self.client.getIp(),"Loading...")
-        url = f"{self.baseUrl}/config"
+        url = self.baseUrl + "/config"
         response = requests.get(url=url)
         data = response.json()
         print(str(data))
@@ -77,7 +77,7 @@ class KrpController:
         self.__cancelReturningTimer()
 
         try:
-            url = f"{self.baseUrl}/log?playerId={userId}"
+            url = self.baseUrl + "/log?playerId=" + userId
             requests.get(url=url)
             self.latestLogByUserId = userId
             self.__writeLastCleanedBy()
