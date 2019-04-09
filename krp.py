@@ -3,10 +3,11 @@ import RPi.GPIO as GPIO
 from time import sleep
 import commands
 from threading import Thread
+from socket import *
 
 GPIO.cleanup()
 GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(True)
+GPIO.setwarnings(False)
 
 lcd_rs = 25
 lcd_en = 24
@@ -58,12 +59,20 @@ GPIO.output(led_pin, GPIO.HIGH)
 #        print('OK Button Pressed')
 #        time.sleep(0.2)
 
+OUR_ADDRESS     = ('127.0.0.1', 3003) # listen to
+ADDRESS_TO_SEND = ('127.0.0.1', 3002) # send to
+sock = socket(AF_INET, SOCK_DGRAM)
+sock.setsockopt( SOL_SOCKET,SO_REUSEADDR, 1 )
+sock.bind( OUR_ADDRESS )
+sock.setsockopt( SOL_SOCKET,SO_BROADCAST, 1 )
+
 def buttonPressed(button):
+    sock.sendto(button.encode(), ADDRESS_TO_SEND)
     print(button)
 
-GPIO.add_event_detect(left_button_pin, GPIO.FALLING, callback=lambda x: buttonPressed("left"), bouncetime=2000)
-GPIO.add_event_detect(ok_button_pin, GPIO.FALLING, callback=lambda x: buttonPressed("ok"), bouncetime=2000)
-GPIO.add_event_detect(right_button_pin, GPIO.FALLING, callback=lambda x: buttonPressed("right"), bouncetime=2000)
+GPIO.add_event_detect(left_button_pin, GPIO.FALLING, callback=lambda x: buttonPressed("LEFT"), bouncetime=2000)
+GPIO.add_event_detect(ok_button_pin, GPIO.FALLING, callback=lambda x: buttonPressed("OK"), bouncetime=2000)
+GPIO.add_event_detect(right_button_pin, GPIO.FALLING, callback=lambda x: buttonPressed("RIGHT"), bouncetime=2000)
 
 def run(*args):
     while True:
