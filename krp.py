@@ -75,7 +75,7 @@ GPIO.setup(right_button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 class KrpController:
 
-    baseUrl = "https://azfn-linqpad-web-app-e5opllzphjvwc.azurewebsites.net/api/krp"
+    baseUrl = "http://azfn-linqpad-web-app-e5opllzphjvwc.azurewebsites.net/api/krp"
     minimumMinutesBetweenLogs = 0
     users = []
     latestLogByUserId = None #todo: get this from the server
