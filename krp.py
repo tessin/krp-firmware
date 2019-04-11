@@ -81,18 +81,24 @@ class KrpController:
         self.client.turnLed(True)
         self.client.write(self.client.getIp(),"Loading...")
         url = self.baseUrl + "/config"
-        response = requests.get(url=url)
-        data = response.json()
-        # print(str(data))
-        self.minimumMinutesBetweenLogs = data['MinimumMinutesBetweenLogs']
-        for jUser in data['Users']:
-            self.users.append(KrpPlayer(jUser['Id'], jUser['FirstName'], jUser['LastName']))
-            
-        self.latestLogByUserId = data['LatestLogByUserId']
 
-        self.client.clear()
-        self.__writeLastCleanedBy()
-        # self.client.loop()
+        while True:
+            try:
+                response = requests.get(url=url)
+                data = response.json()
+                # print(str(data))
+                self.minimumMinutesBetweenLogs = data['MinimumMinutesBetweenLogs']
+                for jUser in data['Users']:
+                    self.users.append(KrpPlayer(jUser['Id'], jUser['FirstName'], jUser['LastName']))
+
+                self.latestLogByUserId = data['LatestLogByUserId']
+
+                self.client.clear()
+                self.__writeLastCleanedBy()
+                break
+            except:
+                pass
+            # self.client.loop()
 
     def onButtonPress(self, button):            # handler for button press
         if self.state == "MENU":
