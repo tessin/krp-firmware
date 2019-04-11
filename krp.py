@@ -79,7 +79,11 @@ class KrpController:
         self.state = "LOADING"
         self.client.init()
         self.client.turnLed(True)
-        self.client.write(self.client.getIp(),"Loading...")
+
+        self.client.write("", "Loading...")
+
+        ip = self.client.getIp()
+        self.client.write(ip, "Loading...")
         url = self.baseUrl + "/config"
 
         while True:
@@ -204,7 +208,13 @@ class KrpClient:
         pass
 
     def getIp(self):
-        return gethostbyname(gethostname())
+        while True:
+            try:
+                response = requests.get(url='https://api.ipify.org/?format=json')
+                data = response.json()
+                return data['ip']
+            except:
+              pass
 
 class KrpConsoleClient(KrpClient):
     lcd = None
