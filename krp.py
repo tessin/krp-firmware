@@ -87,6 +87,8 @@ class KrpController:
         self.minimumMinutesBetweenLogs = data['MinimumMinutesBetweenLogs']
         for jUser in data['Users']:
             self.users.append(KrpPlayer(jUser['Id'], jUser['FirstName'], jUser['LastName']))
+            
+        self.latestLogByUserId = data['LatestLogByUserId']
 
         self.client.clear()
         self.__writeLastCleanedBy()
