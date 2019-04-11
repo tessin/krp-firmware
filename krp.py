@@ -5,7 +5,19 @@ import commands
 from threading import Thread, Timer
 import requests
 from socket import *
-import sys, termios, tty, os
+import sys, termios, tty, os, logging
+
+handler = logging.FileHandler('errors.log')
+handler.setLevel(logging.INFO)
+# create a logging format
+formatter = logging.Formatter('%(asctime)s - %(message)s')
+handler.setFormatter(formatter)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(handler)
+
+logger.info('\n------------------------------------')
+
 
 GPIO.cleanup()
 GPIO.setmode(GPIO.BCM)
@@ -80,23 +92,25 @@ class KrpController:
         self.client.init()
         self.client.turnLed(True)
 
-        self.client.write("", "Loading...")
-
         ip = self.client.getIp()
         self.client.write(ip, "Loading...")
         url = self.baseUrl + "/config"
 
-        response = requests.get(url=url)
-        data = response.json()
-        # print(str(data))
-        self.minimumMinutesBetweenLogs = data['MinimumMinutesBetweenLogs']
-        for jUser in data['Users']:
-            self.users.append(KrpPlayer(jUser['Id'], jUser['FirstName'], jUser['LastName']))
+        try:
+            response = requests.get(url=url)
+            data = response.json()
+            # print(str(data))
+            self.minimumMinutesBetweenLogs = data['MinimumMinutesBetweenLogs']
+            for jUser in data['Users']:
+                self.users.append(KrpPlayer(jUser['Id'], jUser['FirstName'], jUser['LastName']))
 
-        self.latestLogByUserId = data['LatestLogByUserId']
+            self.latestLogByUserId = data['LatestLogByUserId']
 
-        self.client.clear()
-        self.__writeLastCleanedBy()
+            self.client.clear()
+            self.__writeLastCleanedBy()
+        except:
+            logger.info(sys.exc_info()[0])
+            print(sys.exc_info()[0])
 
     def onButtonPress(self, button):            # handler for button press
         if self.state == "MENU":
@@ -202,9 +216,7 @@ class KrpClient:
         pass
 
     def getIp(self):
-        response = requests.get(url='https://api.ipify.org/?format=json')
-        data = response.json()
-        return data['ip']
+        return '10.1.0.15'
 
 class KrpConsoleClient(KrpClient):
     lcd = None
