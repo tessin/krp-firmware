@@ -86,23 +86,17 @@ class KrpController:
         self.client.write(ip, "Loading...")
         url = self.baseUrl + "/config"
 
-        while True:
-            try:
-                response = requests.get(url=url)
-                data = response.json()
-                # print(str(data))
-                self.minimumMinutesBetweenLogs = data['MinimumMinutesBetweenLogs']
-                for jUser in data['Users']:
-                    self.users.append(KrpPlayer(jUser['Id'], jUser['FirstName'], jUser['LastName']))
+        response = requests.get(url=url)
+        data = response.json()
+        # print(str(data))
+        self.minimumMinutesBetweenLogs = data['MinimumMinutesBetweenLogs']
+        for jUser in data['Users']:
+            self.users.append(KrpPlayer(jUser['Id'], jUser['FirstName'], jUser['LastName']))
 
-                self.latestLogByUserId = data['LatestLogByUserId']
+        self.latestLogByUserId = data['LatestLogByUserId']
 
-                self.client.clear()
-                self.__writeLastCleanedBy()
-                break
-            except:
-                pass
-            # self.client.loop()
+        self.client.clear()
+        self.__writeLastCleanedBy()
 
     def onButtonPress(self, button):            # handler for button press
         if self.state == "MENU":
@@ -208,13 +202,9 @@ class KrpClient:
         pass
 
     def getIp(self):
-        while True:
-            try:
-                response = requests.get(url='https://api.ipify.org/?format=json')
-                data = response.json()
-                return data['ip']
-            except:
-              pass
+        response = requests.get(url='https://api.ipify.org/?format=json')
+        data = response.json()
+        return data['ip']
 
 class KrpConsoleClient(KrpClient):
     lcd = None

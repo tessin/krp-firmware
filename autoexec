@@ -1,4 +1,9 @@
 #!/bin/bash
-sleep 20s
+while ! ping -c 1 -n www.google.com &> /dev/null
+do
+    printf "%c" "."
+done
+printf "\n%s\n"  "Server is back online"
+
 cd /home/pi/Repos/krp-firmware/
 python krp.py
