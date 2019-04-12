@@ -91,9 +91,7 @@ class KrpController:
         self.state = "LOADING"
         self.client.init()
         self.client.turnLed(True)
-
-        ip = self.client.getIp()
-        self.client.write(ip, "Loading...")
+        self.client.write(self.client.getIp(),"Loading...")
         url = self.baseUrl + "/config"
 
         try:
@@ -110,7 +108,6 @@ class KrpController:
             self.__writeLastCleanedBy()
         except:
             logger.info(sys.exc_info()[0])
-            print(sys.exc_info()[0])
 
     def onButtonPress(self, button):            # handler for button press
         if self.state == "MENU":
@@ -127,6 +124,8 @@ class KrpController:
             elif button == "OK":
                 self.__registerPlayer(self.users[self.selectedUserIndex].id)
         elif self.state == "ERROR":
+            self.__writeLastCleanedBy()
+        elif self.state == "REGISTERED":
             self.__writeLastCleanedBy()
 
     def __writeLastCleanedBy(self):             # Show main menu
@@ -147,25 +146,35 @@ class KrpController:
 
     def __registerPlayer(self, userId):         # Show registing player on led
         self.state = "REGISTERING"
-        self.client.turnLed(True)
         self.client.write("Registering...", "")
 
         self.__cancelReturningTimer()
 
         try:
             url = self.baseUrl + "/log?playerId=" + str(userId)
-            requests.get(url=url)
-            self.latestLogByUserId = userId
-            self.__writeLastCleanedBy()
-        except:
+            response = requests.get(url=url)
+            if response.status_code == 200:
+                data = response.json()
+                if data['Status'] == 0: # Register Success
+                    self.latestLogByUserId = userId
+                    self.__writeRegisteredMessage(data['Message'])
+                elif data['Status'] == 1: # Log_To_Soon Error
+                    self.__writeError("Log To Soon")
+                else:
+                    self.__writeError("")
+            else:
+                self.__writeError("")
+        except Exception as error:
             self.__writeError("")
-            pass
-        
-        self.client.turnLed(False)
     
-    def __writeError(self, error):              # Show Error on Led when register failed
+    def __writeError(self, error):              # Show Error on Lcd when register failed
         self.state = "ERROR"
         self.client.write("Oops!", error)
+        self.__startReturningTimer()
+    
+    def __writeRegisteredMessage(self, msg):    # Show Register Message on Lcd when register successed
+        self.state = "REGISTERED"
+        self.client.write("REGISTERED", msg)
         self.__startReturningTimer()
 
     def __findUserById(self, userId):           # Find user by userId
@@ -268,15 +277,18 @@ def getch():
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
     return ch
 
-def run(*args):
-    while True:
-		char = getch()
+while True:
+    pass
 
-		if (char == "p"):
-			print("Stop!")
-			exit(0)
+# def run(*args):
+#     while True:
+# 		char = getch()
 
-Thread(target=run).start()
+# 		if (char == "p"):
+# 			print("Stop!")
+# 			exit(0)
+
+# Thread(target=run).start()
 
 # try:
 #     while True:

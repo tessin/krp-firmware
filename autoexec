@@ -1,5 +1,5 @@
 #!/bin/bash
-until ping -c1 www.google.com >/dev/null 2>&1; do :; done
-
+#until ping -c1 www.google.com >/dev/null 2>&1; do :; done
+sleep 5s
 cd /home/pi/Repos/krp-firmware/
 python krp.py
