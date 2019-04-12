@@ -225,7 +225,7 @@ class KrpClient:
         pass
 
     def getIp(self):
-        return '10.1.0.15'
+        return gethostbyname(getfqdn())
 
 class KrpConsoleClient(KrpClient):
     lcd = None
