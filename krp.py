@@ -150,6 +150,8 @@ class KrpController:
 
         self.__cancelReturningTimer()
 
+        self.client.turnLed(True)
+
         try:
             url = self.baseUrl + "/log?playerId=" + str(userId)
             response = requests.get(url=url)
@@ -166,6 +168,8 @@ class KrpController:
                 self.__writeError("")
         except Exception as error:
             self.__writeError("")
+        
+        self.client.turnLed(False)
     
     def __writeError(self, error):              # Show Error on Lcd when register failed
         self.state = "ERROR"
