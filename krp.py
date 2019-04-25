@@ -155,10 +155,10 @@ class KrpController:
             response = requests.get(url=url)
             if response.status_code == 200:
                 data = response.json()
-                if data['Status'] == 'Ok': # Register Success
+                if data['Status'] == 1: # Register Success
                     self.latestLogByUserId = userId
                     self.__writeRegisteredMessage(data['Message'])
-                elif data['Status'] == 'Error_Too_Soon': # Log_To_Soon Error
+                elif data['Status'] == 2: # Log_To_Soon Error
                     self.__writeError("Log To Soon")
                 else:
                     self.__writeError("")
